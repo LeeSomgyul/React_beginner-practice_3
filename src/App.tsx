@@ -1,26 +1,15 @@
 import styled from "styled-components";
-import {motion} from "framer-motion";
-import { useRef } from "react";
+import {motion, useMotionValue, useTransform, useScroll} from "framer-motion";
 
-const Wrapper = styled.div`
-  height: 100vh;
+
+const Wrapper = styled(motion.div)`
+  height: 200vh;
   width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #6C48C5, #C68FE6);
 `;
 
-const BiggerBox = styled(motion.div)`
-  width: 500px;
-  height: 500px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-`;
 
 const Box = styled(motion.div)`
   width: 200px;
@@ -30,31 +19,25 @@ const Box = styled(motion.div)`
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.06);
 `;
 
-const boxVariants = {
-  hover: {rotateZ: 90},
-  tap: {borderRadius: "100px"},
-};
-
 
 
 function App() {
-  const biggerBoxRef = useRef<HTMLDivElement>(null);//처음에 아무것도 가르키지 않다가(null) 나중에 BiggerBox(div)를 참조한다는 의미
+  const boxPosition = useMotionValue(0);//Box가 움직일때마다 위치 좌표가 저장
+  const rotate = useTransform(boxPosition, [-800, 800], [-360, 360]);//boxPosition이 -800이면 2, 0이면 1, 800이면 0.1로 출력
+  const gradient = useTransform(
+    boxPosition,
+    [-800, 800],
+    ["linear-gradient(135deg, rgb(0, 210, 238), rgb(0, 83, 238))", "linear-gradient(135deg, rgb(0, 228, 155), rgb(238, 178, 0))"]
+  );
+
+  const {scrollYProgress} = useScroll();//수직으로 스크롤 할때마다 위치 좌표가 저장
+  const scale = useTransform(scrollYProgress, [0,1], [1,5]);//스크롤이 0%(시작)이면 1, 100%(끝)이면 5 반환
 
   return (
-    <Wrapper>
-      <BiggerBox ref={biggerBoxRef}>
-        <Box 
-          variants={boxVariants}
-          drag//drag기능 추가
-          dragSnapToOrigin//기존 위치로 돌아가려는 성질
-          dragConstraints={biggerBoxRef}//BiggerBox에서 Box가 벗어나지 못하도록
-          dragElastic={0.7}
-          whileHover="hover"
-          whileTap="tap"
-        >
+    <Wrapper style={{background: gradient}}>
+        <Box drag="x" dragSnapToOrigin style={{x:boxPosition, rotateZ: rotate, scale:scale}}>{/*sytle: CSS스타일인 X축에 boxPosition의 값을 적용해라 */}
           &nbsp;
         </Box>
-      </BiggerBox>
     </Wrapper>
   );
 }
