@@ -28,43 +28,48 @@ const Box = styled(motion.div)`
 `;
 
 const boxVariants = {
-  initial: {
-    x: 500,
-    opacity: 0,
-    scale: 0,
-  },
-  visivle: {
+  entry: (back: boolean) => ({
+      x: back ? -500 : 500,
+      opacity: 0,
+      scale: 0,
+      transition: {duration: 0.3},
+  }),
+  center: {
     x: 0,
     opacity: 1,
     scale: 1,
   },
-  living: {
-    x: -500,
+  exit: (back: boolean) => ({
+    x: back ? 500 : -500,
     opacity: 0,
     scale: 0,
-  }
+    transition: {duration: 0.3},
+  })
 }
 
 
 function App() {
-  const [order, setOrder] = useState(1);
+  const [order, setOrder] = useState(1);//현재 카드 순서 저장
+  const [back, setBack] = useState(false);//카드 애니메이션을 뒤로 움직일지 여부
   const handleNext = () => {
+    setBack(false);
     setOrder((prev) => (prev === 10 ? 10 : prev + 1));
   }
-
+  const handlePrev = () => {
+    setBack(true);
+    setOrder((prev) => (prev === 1 ? 1 : prev - 1));
+  }
  
   return (
     <Wrapper>
       <AnimatePresence>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => 
-          i === order ? (
-            <Box variants={boxVariants} initial="initial" animate="visivle" exit="living" key={i}>
-              {i}
-            </Box>
-          ) : null
-        )}
+        <Box custom={back} variants={boxVariants} initial="entry" animate="center" exit="exit" key={order}>
+          {/*custom: <Box>에 back 매개변수 전달 */}
+          {order}
+        </Box>
       </AnimatePresence>
-      <button onClick={handleNext}>클릭!</button>
+      <button onClick={handleNext}>다음</button>
+      <button onClick={handlePrev}>이전</button>
     </Wrapper>
   );
 }
